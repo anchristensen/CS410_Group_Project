@@ -2,7 +2,6 @@ import os
 import json
 import subprocess
 from pyserini.search.lucene import LuceneSearcher
-
 from extract_clean_data import retrieve_process_data 
 
 
