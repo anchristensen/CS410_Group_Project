@@ -2,7 +2,7 @@ import os
 import json
 import subprocess
 from pyserini.search.lucene import LuceneSearcher
-from extract_clean_data import retrieve_process_data 
+from data_pipeline_kaggle import process_data 
 
 
 # so we can't do the retrieve_process_data with API limits and such, we need to download data
@@ -12,18 +12,47 @@ from extract_clean_data import retrieve_process_data
 
 CORPUS_DIR = "processed_corpus"
 INDEX_DIR = "indexes"
+PROCESSED_DIR = "processed"  # For dense retriever
 
-def dump_so_corpus(query=None):
-    data = retrieve_process_data(query)
+def dump_so_corpus(n_rows=10000):
+    data = process_data(n_rows)
+
+    if not os.path.exists(CORPUS_DIR):
+        os.makedirs(CORPUS_DIR)
 
     for i, q in enumerate(data):
         doc = {
-            "id": str(q["q_id"]),
-            "contents": q["title"] + "\n" + q["body"]
+            "id": str(q["question_id"]),
+            "contents": q["Title"] + "\n" + q["question_text"] + "\n" + q.get("answer_text", "")
         }
 
         with open(os.path.join(CORPUS_DIR, f"doc{i}.json"), "w") as f:
             json.dump(doc, f)
+
+    # Also create JSONL format for dense retriever
+    create_dense_corpus(data)
+
+
+def create_dense_corpus(data=None, n_rows=10000):
+    """Create JSONL corpus for dense retriever from processed data."""
+    if data is None:
+        data = process_data(n_rows)
+
+    if not os.path.exists(PROCESSED_DIR):
+        os.makedirs(PROCESSED_DIR)
+
+    output_file = os.path.join(PROCESSED_DIR, "corpus.jsonl")
+
+    with open(output_file, "w", encoding="utf-8") as f:
+        for q in data:
+            doc = {
+                "question_id": q["question_id"],
+                "title": q["Title"],
+                "body": q["question_text"] + "\n" + q.get("answer_text", "")
+            }
+            f.write(json.dumps(doc) + "\n")
+
+    print(f"Created JSONL corpus for dense retriever: {len(data)} documents")
             
 
 
@@ -31,6 +60,11 @@ def build_index():
     if os.path.exists(INDEX_DIR) and os.listdir(INDEX_DIR):
         print("Index already exists. Skipping indexing.")
         return
+
+    # Create corpus if it doesn't exist
+    if not os.path.exists(CORPUS_DIR) or not os.listdir(CORPUS_DIR):
+        print("Creating corpus for indexing...")
+        dump_so_corpus()
 
     cmd = [
         "python", "-m", "pyserini.index.lucene",
@@ -42,7 +76,9 @@ def build_index():
         "--storePositions", "--storeDocvectors", "--storeRaw"
     ]
 
+    print("Building BM25 index...")
     subprocess.run(cmd, check=True)
+    print("BM25 index built successfully!")
     
     
 def create_searcher(use_rm3=True):

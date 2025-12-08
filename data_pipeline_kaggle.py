@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 import nltk
+import os
 first_time = False
 if first_time:
     nltk.download('stopwords')
@@ -14,13 +15,13 @@ warnings.filterwarnings("ignore")
 
 #QUESTIONS
 def get_question_data():
-    pth_questions = r'data\Questions.csv'
+    pth_questions = os.path.join('data', 'Questions.csv')
     df_questions = pd.read_csv(pth_questions, encoding='latin1')
     return df_questions
 
 #ANSWERS
 def get_answer_data():
-    pth_answers = r'data\Answers.csv'
+    pth_answers = os.path.join('data', 'Answers.csv')
     df_answers = pd.read_csv(pth_answers, encoding='latin1')
     return df_answers
 
@@ -80,5 +81,6 @@ def process_data(n_rows):
     data = q_and_a_data_cleaned.to_dict('records')
     return data
 
-data = process_data(10000)
-print(data[0:5])
+# Commented out auto-execution - call process_data() when needed instead
+# data = process_data(10000)
+# print(data[0:5])

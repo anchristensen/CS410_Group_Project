@@ -1,1 +1,43 @@
+# Data files
 *.csv
+data/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# BM25/Lucene indexes (can be rebuilt)
+indexes/
+processed_corpus/
+
+# Dense retrieval artifacts (can be rebuilt)
+processed/
+dense_index.faiss
+dense_metadata.json
+*.faiss
+
+# Jupyter notebooks (if any)
+.ipynb_checkpoints/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Kaggle config (contains credentials)
+.kaggle/
+kaggle.json
