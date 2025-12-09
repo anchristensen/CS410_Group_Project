@@ -2,10 +2,10 @@
 # Helper script to run the project with virtual environment
 
 # Activate virtual environment
-source venv/bin/activate
+source venv/Scripts/activate
 
 # Run main.py
-python main.py
+python app.py
 
 # Deactivate when done
 deactivate

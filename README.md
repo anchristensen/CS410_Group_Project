@@ -18,13 +18,13 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install pandas numpy nltk beautifulsoup4 lxml
 pip install pyserini faiss-cpu sentence-transformers
-pip install kaggle stackapi requests
+pip install kaggle stackapi requests flask
 
 # 2. Set up Kaggle credentials (place kaggle.json in ~/.kaggle/)
 # Or run: python generate_config.py
 
-# 3. Run the full pipeline
-python main.py
+# 3. Run the UI
+python app.py
 
 # Or use the helper script (activates venv automatically):
 ./run.sh

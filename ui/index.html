@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stack Overflow Duplicate Question Search</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Stack Overflow Duplicate Question Search</h1>
+
+    <div class="search-box">
+        <form id="searchForm">
+            <input type="text" id="query" name="query" placeholder="Enter your question..." required>
+            <label>Top K:</label>
+            <input type="number" id="k" name="k" value="3" min="1" max="20">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+    <div id="results" class="results"></div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            var query = document.getElementById('query').value;
+            var k = document.getElementById('k').value;
+            var resultsDiv = document.getElementById('results');
+
+            resultsDiv.innerHTML = '<div class="loading">Searching...</div>';
+
+            var formData = new FormData();
+            formData.append('query', query);
+            formData.append('k', k);
+
+            fetch('/search', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                var html = '<h2>Results for: "' + data.query + '"</h2>';
+
+                // Dashboard
+                html += '<div class="dashboard">';
+                html += '<h3>Top Answer by Method</h3>';
+                html += '<table class="comparison-table">';
+                html += '<tr><th>Method</th><th>Top Question</th><th>Score</th><th>Overlap</th></tr>';
+
+                var methods = [
+                    {key: 'bm25', name: 'BM25/RM3'},
+                    {key: 'dense', name: 'Dense Retrieval'},
+                    {key: 'rrf', name: 'RRF Fusion'},
+                    {key: 'linear', name: 'Linear Fusion'},
+                    {key: 'hybrid', name: 'Hybrid Fusion'}
+                ];
+
+                methods.forEach(function(method) {
+                    var results = data.all_results[method.key];
+                    if (results && results.length > 0) {
+                        var top = results[0];
+                        html += '<tr>';
+                        html += '<td><strong>' + method.name + '</strong></td>';
+                        html += '<td>' + top.title + '</td>';
+                        html += '<td>' + top.score + '</td>';
+                        html += '<td>' + top.overlap + '</td>';
+                        html += '</tr>';
+                    }
+                });
+
+                html += '</table>';
+                html += '</div>';
+
+                methods.forEach(function(method) {
+                    var results = data.all_results[method.key];
+
+                    if (results && results.length > 0) {
+                        html += '<div class="method-section">';
+                        html += '<h2>' + method.name + '</h2>';
+
+                        results.forEach(function(result, index) {
+                            html += '<div class="result-item">';
+                            html += '<h3>' + (index + 1) + '. ' + result.title + '</h3>';
+                            html += '<div class="result-info">';
+                            html += 'ID: ' + result.id + ' | ';
+                            html += 'Score: ' + result.score + ' | ';
+                            html += 'Overlap: ' + result.overlap;
+                            html += '</div>';
+
+                            html += '<div class="question">';
+                            html += '<strong>Question:</strong><br>' + result.question;
+                            html += '</div>';
+
+                            html += '<div class="answer">';
+                            html += '<strong>Answer:</strong><br>' + result.answer;
+                            html += '</div>';
+
+                            html += '</div>';
+                        });
+
+                        html += '</div>';
+                    }
+                });
+                resultsDiv.innerHTML = html;
+            });
+        });
+    </script>
+</body>
+</html>
