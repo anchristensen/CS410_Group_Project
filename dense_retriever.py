@@ -51,6 +51,10 @@ def build_dense_index(
     model_name: str = MODEL_NAME,
     batch_size: int = 64,
 ) -> None:
+    if os.path.exists(index_path) and os.path.exists(meta_path):
+        print("Dense index already exists. Skipping indexing.")
+        return
+
     texts, metadata = load_corpus(data_dir)
 
     model = SentenceTransformer(model_name)

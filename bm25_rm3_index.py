@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import subprocess
 from pyserini.search.lucene import LuceneSearcher
@@ -67,7 +68,7 @@ def build_index():
         dump_so_corpus()
 
     cmd = [
-        "python", "-m", "pyserini.index.lucene",
+        sys.executable, "-m", "pyserini.index.lucene",
         "--collection", "JsonCollection",
         "--input", CORPUS_DIR,
         "--index", INDEX_DIR,
